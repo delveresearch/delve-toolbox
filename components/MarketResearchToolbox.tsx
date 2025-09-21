@@ -468,11 +468,11 @@ export default function MarketResearchToolbox() {
         <p className="text-sm text-muted-foreground">Four quick, client-facing utilities.</p>
       </header>
       <Tabs defaultValue="ncalc" className="w-full">
-        <TabsList className="grid grid-cols-1 md:grid-cols-4 w-full">
-          <TabsTrigger value="ncalc">Sample Size</TabsTrigger>
-          <TabsTrigger value="weights">Weighting Impact</TabsTrigger>
-          <TabsTrigger value="sig">Significance Checker</TabsTrigger>
-          <TabsTrigger value="dropoff">Drop-off Predictor</TabsTrigger>
+        <TabsList className="flex w-full flex-wrap gap-2 bg-transparent p-0 h-auto">
+          <TabsTrigger className="flex-1 min-w-[140px]" value="ncalc">Sample Size</TabsTrigger>
+          <TabsTrigger className="flex-1 min-w-[140px]" value="weights">Weighting Impact</TabsTrigger>
+          <TabsTrigger className="flex-1 min-w-[140px]" value="sig">Significance Checker</TabsTrigger>
+          <TabsTrigger className="flex-1 min-w-[140px]" value="dropoff">Drop-off Predictor</TabsTrigger>
         </TabsList>
         <TabsContent value="ncalc"><SampleSizeCalculator /></TabsContent>
         <TabsContent value="weights"><WeightingImpactVisualizer /></TabsContent>
