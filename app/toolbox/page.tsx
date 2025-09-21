@@ -1,5 +1,2 @@
-﻿import MarketResearchToolbox from "../../components/MarketResearchToolbox";
-
-export default function Page() {
-  return <MarketResearchToolbox />;
-}
+﻿import MarketResearchToolbox from "@/components/MarketResearchToolbox";
+export default function Page() { return <MarketResearchToolbox />; }
