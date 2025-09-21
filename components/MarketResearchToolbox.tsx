@@ -464,12 +464,33 @@ export default function MarketResearchToolbox() {
   return (
     <div className="p-4 md:p-6 max-w-[1400px] mx-auto space-y-6">
       <Tabs defaultValue="ncalc" className="w-full">
-        <TabsList className="flex w-full flex-wrap gap-2 bg-transparent p-0 h-auto">
-          <TabsTrigger className="flex-1 min-w-[140px]" value="ncalc">Sample Size</TabsTrigger>
-          <TabsTrigger className="flex-1 min-w-[140px]" value="weights">Weighting Impact</TabsTrigger>
-          <TabsTrigger className="flex-1 min-w-[140px]" value="sig">Significance Checker</TabsTrigger>
-          <TabsTrigger className="flex-1 min-w-[140px]" value="dropoff">Drop-off Predictor</TabsTrigger>
-        </TabsList>
+       <TabsList className="flex w-full flex-wrap gap-2 bg-transparent p-0 h-auto">
+  <TabsTrigger
+    className="flex-1 min-w-[140px] rounded-md border px-3 py-2 text-sm md:text-base font-medium transition-all hover:bg-muted/50 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    value="ncalc"
+  >
+    Sample Size
+  </TabsTrigger>
+  <TabsTrigger
+    className="flex-1 min-w-[140px] rounded-md border px-3 py-2 text-sm md:text-base font-medium transition-all hover:bg-muted/50 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    value="weights"
+  >
+    Weighting Impact
+  </TabsTrigger>
+  <TabsTrigger
+    className="flex-1 min-w-[140px] rounded-md border px-3 py-2 text-sm md:text-base font-medium transition-all hover:bg-muted/50 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    value="sig"
+  >
+    Significance Checker
+  </TabsTrigger>
+  <TabsTrigger
+    className="flex-1 min-w-[140px] rounded-md border px-3 py-2 text-sm md:text-base font-medium transition-all hover:bg-muted/50 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    value="dropoff"
+  >
+    Drop-off Predictor
+  </TabsTrigger>
+</TabsList>
+
         <TabsContent value="ncalc"><SampleSizeCalculator /></TabsContent>
         <TabsContent value="weights"><WeightingImpactVisualizer /></TabsContent>
         <TabsContent value="sig"><SignificanceChecker /></TabsContent>
