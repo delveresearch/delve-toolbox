@@ -463,10 +463,6 @@ function DropoffPredictor() {
 export default function MarketResearchToolbox() {
   return (
     <div className="p-4 md:p-6 max-w-[1400px] mx-auto space-y-6">
-      <header className="space-y-1">
-        <h1 className="text-2xl md:text-3xl font-bold">Delve Research – Market Research Toolbox</h1>
-        <p className="text-sm text-muted-foreground">Four helpful market research utilities.</p>
-      </header>
       <Tabs defaultValue="ncalc" className="w-full">
         <TabsList className="flex w-full flex-wrap gap-2 bg-transparent p-0 h-auto">
           <TabsTrigger className="flex-1 min-w-[140px]" value="ncalc">Sample Size</TabsTrigger>
