@@ -16,6 +16,9 @@ const zForCL = (cl: number) => ({ 90: 1.644854, 95: 1.959964, 99: 2.575829 } as 
 function erf(x: number) { const s = x < 0 ? -1 : 1; const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911; x = Math.abs(x); const t = 1 / (1 + p * x); const y = 1 - (((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t) * Math.exp(-x * x); return s * y; }
 function zcdf(z: number) { return 0.5 * (1 + erf(z / Math.SQRT2)); }
 
+type SegmentRow = { label: string; sample: number; target: number };
+type SegmentNorm = SegmentRow & { s: number; t: number; w: number; idx: number };
+
 function Stat({ title, value, sub, highlight }: { title: string; value: React.ReactNode; sub?: string; highlight?: boolean }) {
   return (
     <div className={`rounded-2xl border p-4 ${highlight ? "border-2 border-blue-500 bg-blue-50 dark:bg-blue-950" : ""}`}>
@@ -135,7 +138,7 @@ function SampleSizeCalculator() {
 
 function WeightingImpactVisualizer() {
   const [n, setN] = useState<number>(1000);
-  const [rows, setRows] = useState<{ label: string; sample: number; target: number }[]>([
+  const [rows, setRows] = useState<SegmentRow[]>([
     { label: "18–34", sample: 30, target: 32 },
     { label: "35–54", sample: 40, target: 38 },
     { label: "55+", sample: 30, target: 30 }
@@ -145,29 +148,34 @@ function WeightingImpactVisualizer() {
   const totals = useMemo(() => {
     const sTot = rows.reduce((a, r) => a + (r.sample || 0), 0) || 1;
     const tTot = rows.reduce((a, r) => a + (r.target || 0), 0) || 1;
-    const norm = rows.map((r, i) => {
+    const norm: SegmentNorm[] = rows.map((r, i) => {
       const s = (r.sample || 0) / sTot;
       const t = (r.target || 0) / tTot;
       const w = s > 0 ? t / s : 0;
-      return { ...r, s, t, w, idx: i } as any;
+      return { ...r, s, t, w, idx: i };
     });
-    const meanW = norm.reduce((a: number, r: any) => a + r.s * r.w, 0) || 1;
-    const cv2 = norm.reduce((a: number, r: any) => a + r.s * Math.pow(r.w / meanW - 1, 2), 0);
+    const meanW = norm.reduce<number>((a, r) => a + r.s * r.w, 0) || 1;
+    const cv2 = norm.reduce<number>((a, r) => a + r.s * Math.pow(r.w / meanW - 1, 2), 0);
     const deff = 1 + cv2;
     const neff = n / deff;
-    const wMin = Math.min(...norm.map((r: any) => r.w));
-    const wMax = Math.max(...norm.map((r: any) => r.w));
+    const wMin = Math.min(...norm.map((r) => r.w));
+    const wMax = Math.max(...norm.map((r) => r.w));
     let unweightedY: number | null = null;
     let weightedY: number | null = null;
     if (showOutcome) {
       const ys = outcomes.map((o) => clamp((o?.y || 0) / 100, 0, 1));
-      unweightedY = norm.reduce((a: number, r: any, i: number) => a + r.s * ys[i], 0);
-      weightedY = norm.reduce((a: number, r: any, i: number) => a + r.t * ys[i], 0);
+      unweightedY = norm.reduce<number>((a, r, i) => a + r.s * ys[i], 0);
+      weightedY = norm.reduce<number>((a, r, i) => a + r.t * ys[i], 0);
     }
     return { norm, deff, neff, wMin, wMax, unweightedY, weightedY };
   }, [rows, n, showOutcome, outcomes]);
-  const updateRow = (i: number, field: "label" | "sample" | "target", val: any) => {
-    setRows((rows) => rows.map((r, idx) => (idx === i ? { ...r, [field]: val } : r)));
+  const updateRow = (i: number, field: keyof SegmentRow, val: string | number) => {
+    setRows((curr) => curr.map((r, idx) => {
+      if (idx !== i) return r;
+      if (field === "label") return { ...r, label: String(val) };
+      if (field === "sample") return { ...r, sample: Number(val) };
+      return { ...r, target: Number(val) };
+    }));
   };
   const updateOutcome = (i: number, val: number) => setOutcomes((o) => o.map((r, idx) => (idx === i ? { y: val } : r)));
   return (
@@ -187,7 +195,7 @@ function WeightingImpactVisualizer() {
               <div className="col-span-3">Target %</div>
               <div className="col-span-2 text-right">Weight</div>
             </div>
-            {totals.norm.map((r: any, i: number) => (
+            {totals.norm.map((r: SegmentNorm, i: number) => (
               <div key={i} className="grid grid-cols-12 gap-2 items-center mt-1">
                 <Input className="col-span-4" value={r.label} onChange={(e) => updateRow(i, "label", e.target.value)} />
                 <Input className="col-span-3" type="number" step="0.1" value={rows[i].sample} onChange={(e) => updateRow(i, "sample", Number(e.target.value))} />
@@ -258,6 +266,8 @@ function SignificanceChecker() {
   const [n2, setN2] = useState<number>(500);
   const [conf, setConf] = useState<number>(95);
   const [tail, setTail] = useState<"two" | "left" | "right">("two");
+  const onModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => setMode(e.target.value === "counts" ? "counts" : "percents");
+  const onTailChange = (e: React.ChangeEvent<HTMLSelectElement>) => setTail((e.target.value as "two" | "left" | "right"));
   const calc = useMemo(() => {
     const Z = zForCL(conf);
     let p1: number, p2: number, s1: number, s2: number;
@@ -286,7 +296,7 @@ function SignificanceChecker() {
         <h2 className="text-xl font-semibold">Significance Test Checker (Two Proportions)</h2>
         <div className="flex flex-wrap gap-3 items-center">
           <Label>Input mode:</Label>
-          <select className="border rounded-md h-10 px-3" value={mode} onChange={(e) => setMode(e.target.value as any)}>
+          <select className="border rounded-md h-10 px-3" value={mode} onChange={onModeChange}>
             <option value="counts">Counts (x / n)</option>
             <option value="percents">Percentages (%) + n</option>
           </select>
@@ -330,7 +340,7 @@ function SignificanceChecker() {
           </div>
           <div>
             <Label>Test tail</Label>
-            <select className="w-full border rounded-md h-10 px-3" value={tail} onChange={(e) => setTail(e.target.value as any)}>
+            <select className="w-full border rounded-md h-10 px-3" value={tail} onChange={onTailChange}>
               <option value="two">Two-sided</option>
               <option value="right">A &gt; B</option>
               <option value="left">A &lt; B</option>
